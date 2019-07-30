@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Country Search with Button Click</title>
+
+</head>
+
+<body background="sample.jpg">
+    <style>
+        .country h1 {
+            text-align: center;
+            margin: auto;
+        }
+
+        #search_input {
+            border: 1px solid;
+            padding: 2px;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+
+
+        #search-term {
+            font-size: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Float four columns side by side */
+        .column {
+            float: left;
+            width: 25%;
+            padding: 0 10px;
+        }
+
+        /* Remove extra left and right margins, due to padding */
+        .row {
+            margin: 0 -5px;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* Responsive columns */
+ 
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+    .column {
+                width: 100%;
+                display: block;
+                margin-bottom: 20px;
+            }
+} 
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+    .column {
+                width: 33%;
+                display: block;
+                margin-bottom: 20px;
+            }
+} 
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+    .column {
+        width: 33%;
+                display: block;
+                margin-bottom: 20px;
+            }
+} 
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+    .column {
+                width: 25%;
+                display: block;
+                margin-bottom: 20px;
+            }
+}
+        /* Style the counter cards */
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            text-align: center;
+            background-color: #f1f1f1;
+        }
+
+        .card img {
+            width: 100%;
+            height: 225px;
+        }
+
+        .card span {
+            font-size: 21px;
+            height: 30px;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="country">
+        <h1>Country Dropdown with flag</h1>
+
+        <!-- Search start -->
+        <div>
+            <input type="text" name="country" id="search_input" />
+            <button id="search-term">Search</button>
+        </div>
+        <!-- Search end -->
+        <!--search results-->
+        <div id="search_result" class="row"></div>
+        <!-- Search results end -->
+
+        <!-- Modal start -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="country-result">Please wait...</p>
+            </div>
+        </div>
+        <!-- Modal End -->
+
+        <script type="text/javascript">
+            //create a node..
+            function createNode(element) {
+                return document.createElement(element);
+            }
+
+            //append a node..
+            function append(parent, el) {
+                return parent.appendChild(el);
+            }
+
+            //get the search result from rest api
+            const url = 'https://restcountries.eu/rest/v2/name/';
+            document.getElementById("search-term").addEventListener("click", function (zEvent) {
+                var inputValue = document.getElementById('search_input').value;
+                console.log(inputValue);
+                const ul = document.getElementById('search_result');
+                ul.innerHTML = "";
+                if (inputValue) {
+                    var url_searchterm = url + inputValue;
+                    fetch(url_searchterm)
+                        .then((resp) => resp.json())
+                        .then(function (data) {
+
+                            if (data.status != '404') {
+                                return data.map(function (country_data) {
+                                    console.log(country_data);
+                                    let divtag = createNode('div'),
+                                        img = createNode('img'),
+                                        innerDiv = createNode('div'),
+                                        span = createNode('div');
+                                    inputHidden = createNode('input');
+                                    img.src = country_data.flag;
+                                    img.className = 'country-image';
+                                    divtag.className = 'column';
+                                    innerDiv.className = 'card';
+                                    innerDiv.id = 'brnPrepend';
+                                    inputHidden.setAttribute("type", "hidden");
+                                    inputHidden.setAttribute("value", country_data.callingCodes);
+                                    inputHidden.className = 'country-code';
+                                    span.innerHTML = `${country_data.name}`;
+                                    append(innerDiv, img);
+                                    append(innerDiv, span);
+                                    append(innerDiv, inputHidden);
+                                    append(divtag, innerDiv);
+                                    append(ul, divtag);
+
+                                })
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log("Error:" + JSON.stringify(error));
+                        });
+                }
+            });
+
+
+            // Get the modal
+            var modal = document.getElementById("myModal");
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function () {
+                document.getElementById("country-result").innerHTML = "Please wait...";
+                modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    document.getElementById("country-result").innerHTML = "Please wait...";
+                    modal.style.display = "none";
+                }
+            }
+
+            //update the result to model box...
+            document.addEventListener('click', function (e) {
+                
+                if (e.target && (e.target.id == 'brnPrepend' || e.target.tagName == 'IMG')) {
+                    
+                    var countrycode = e.target.childNodes[2] ? e.target.childNodes[2].value : e.target.nextSibling.nextSibling.value;
+                    const country_details_url = 'https://restcountries.eu/rest/v2/callingcode/';
+                    if (countrycode) {
+                        var country_details = country_details_url + countrycode;
+                        fetch(country_details)
+                            .then((resp) => resp.json())
+                            .then(function (data) {
+
+                                var resultdata = JSON.stringify(data);
+                                console.log(resultdata);
+
+                                document.getElementById("country-result").innerHTML = resultdata;
+                            })
+                            .catch(function (error) {
+                                console.log("Error:" + JSON.stringify(error));
+                            });
+                    }
+                    modal.style.display = "block";
+                }
+            });
+
+        </script>
+</body>
+
+</html>

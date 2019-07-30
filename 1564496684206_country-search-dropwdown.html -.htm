@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Country Search with Dropdown</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body background="sample.jpg">
+    <style>
+        .country {
+            width: 40%;
+            margin: auto;
+        }
+
+        .country h1 {
+            text-align: center;
+        }
+
+        #search_input {
+            width: 100%;
+            border: 1px solid;
+            padding: 2px;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+
+        #search_result li {
+            background-color: #fff;
+            color: #000;
+            font-size: 20px;
+        }
+
+        #search_result li:hover {
+            background-color: #0074BD;
+            color: #fff;
+        }
+
+        #search_result li img {
+            width: 5%;
+            height: 5%;
+        }
+
+        #search_result li span {
+            padding-left: 2px;
+            cursor: pointer;
+            line-height: 1.3;
+        }
+
+        #search_result {
+            list-style-type: none;
+            padding: 2px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin: 0 !important;
+            overflow: scroll;
+            max-height: 329px;
+            overflow-x: hidden;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="country">
+        <h1>Country Dropdown with flag</h1>
+        <div id="search-inputbox">
+        <input type="text" name="country" id="search_input" />
+        </div>
+        <ul id="search_result"></ul>
+
+    </div>
+
+    <!-- Modal start -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="country-result">Please wait...</p>
+        </div>
+    </div>
+    <!-- Modal End -->
+    <script type="text/javascript">
+
+        function createNode(element) {
+            return document.createElement(element);
+        }
+
+        function append(parent, el) {
+            return parent.appendChild(el);
+        }
+
+        const ul = document.getElementById('search_result');
+        const url = 'https://restcountries.eu/rest/v2/name/';
+        document.getElementById("search_input").addEventListener("keyup", function (zEvent) {
+          
+            var inputValue = document.getElementById('search_input').value;
+             
+            console.log(inputValue);
+            ul.innerHTML = "";
+            if (inputValue) {
+                var url_searchterm = url + inputValue;
+                fetch(url_searchterm)
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+                        console.log(data.status);
+                        if (data.status != '404') {
+                            return data.map(function (country_data) {
+                                let li = createNode('li'),
+                                    img = createNode('img'),
+                                    anchertag = createNode('a'),
+                                    span = createNode('span');
+                                inputHidden = createNode('input');
+                                img.src = country_data.flag;
+                                inputHidden.setAttribute("type", "hidden");
+                                inputHidden.setAttribute("value", country_data.callingCodes);
+                                inputHidden.className = 'country-code';
+                                li.id = 'brnPrepend';
+                                span.innerHTML = `${country_data.name}`;
+                                append(li, img);
+                                append(li, span);
+                                append(li, inputHidden);
+                                append(anchertag, li);
+                                append(ul, anchertag);
+
+                            })
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log("Error:" + JSON.stringify(error));
+                    });
+            }
+        });
+
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            document.getElementById("country-result").innerHTML = "Please wait...";
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                document.getElementById("country-result").innerHTML = "Please wait...";
+                modal.style.display = "none";
+            }
+        }
+       
+         // When the user clicks anywhere outside of the search input, close it
+         var search_input = document.getElementById("search-inputbox");
+         window.onclick = function (event) {
+             console.log(event.target);
+            if (event.target != search_input) {
+                document.getElementById('search_result').innerHTML = "";
+            }
+        }
+        //update the result to model box...
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.id == 'brnPrepend') {
+
+                var countrycode = e.target.childNodes[2].value;
+                const country_details_url = 'https://restcountries.eu/rest/v2/callingcode/';
+                if (countrycode) {
+                    
+                    var country_details = country_details_url + countrycode;
+                    fetch(country_details)
+                        .then((resp) => resp.json())
+                        .then(function (data) {
+
+                            var resultdata = JSON.stringify(data);
+                            console.log(resultdata);
+
+                            document.getElementById("country-result").innerHTML = resultdata;
+                            document.getElementById('search_result').innerHTML = "";
+                        })
+                        .catch(function (error) {
+                            console.log("Error:" + JSON.stringify(error));
+                        });
+                }
+                modal.style.display = "block";
+            }
+        });
+    </script>
+</body>
+
+</html>
